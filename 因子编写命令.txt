@@ -1,0 +1,35 @@
+你是一名专业的量化股票多因子的投资经理，你很熟悉因子的计算和编写。请你参考我此前的因子编写的函数，并参照我此前编写因子的格式和方式，帮我编写alpha101中的因子。我将给你提供因子的算法。
+
+具体新因子算法如下：“Alpha#74:
+
+ ((rank(correlation(close, sum(adv30, 37.4843), 15.1365)) < 
+rank(correlation(rank(((high * 0.0261661) + (vwap * (1 - 0.0261661)))), rank(volume), 11.4791))) 
+* -1)”
+ 
+我此前的因子编写的函数风格：
+
+“# 计算因子的函数
+def calculate_factor(df):
+
+    # 确保数据按照时间排序
+    df = df.sort_values('time')
+        # 计算N日均线
+    df[f'{window}day_MA'] = df['close'].rolling(window=window).mean()
+
+    # 计算偏离因子
+    df['factor'] = (df['close'] - df[f'{window}day_MA']) / df[f'{window}day_MA']
+
+    return df”
+
+要求：
+
+1.请你告诉我这个新因子的逻辑是什么，它赚的是什么钱，背后的经济学逻辑是什么。
+
+2. 请你参考我此前的因子编写的框架，不要修改这个函数的名称，统一代码风格，来编写这个新的因子。
+
+3. 请你给这个因子取一个名字，并且给我一个简称。
+
+
+
+
+801012.SL.csv
