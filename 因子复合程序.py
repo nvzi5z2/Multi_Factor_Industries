@@ -73,12 +73,12 @@ def combine_factors_from_directory(directory):
     return combined_df
 
 # 指定包含因子文件的目录路径
-directory = "D:\量化交易构建\ETF轮动策略\行业轮动策略\ETF因子库\合成因子选项"
+directory = "D:\量化交易构建\ETF轮动策略\行业轮动因子库\合成因子选项"
 composite_df = combine_factors_from_directory(directory)
 
 
 #输出文件路径
 # # 将合成的因子DataFrame保存到新的CSV文件中
-export_path=r'D:\量化交易构建\ETF轮动策略\行业轮动策略\待测试因子库'
-output_path = os.path.join(export_path, "result_8.csv")
+export_path=r'D:\量化交易构建\ETF轮动策略\待测试因子库'
+output_path = os.path.join(export_path, "vwap_com.csv")
 composite_df.to_csv(output_path, index=False)

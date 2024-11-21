@@ -7,7 +7,7 @@ from scipy.cluster.hierarchy import dendrogram, linkage, fcluster
 
 
 # 设置文件路径
-path = r'D:\量化交易构建\ETF轮动策略\行业轮动策略\因子IC序列'
+path = r'D:\量化交易构建\ETF轮动策略\因子IC序列'
 
 # 获取文件列表
 file_list = os.listdir(path)

@@ -23,7 +23,7 @@ class Industry_Strategy_10Day:
 
         self.holding_period = 10
 
-        self.factor_export_path=r"D:\量化交易构建\ETF轮动策略\行业轮动策略\ETF因子库\有效因子"
+        self.factor_export_path=r"D:\量化交易构建\ETF轮动策略\行业轮动因子库\有效因子"
     
     #计算工具函数
     def add_holding_period_factors(self, df, holding_period, start_date=None):
@@ -539,7 +539,88 @@ class Industry_Strategy_10Day:
 
         return result
     
+    def MRPD(self):
+        # 这里我们直接使用类的属性，而不是在参数列表中使用self
+        holding_period = self.holding_period
+        
+        start_date = self.start_date
 
+        # 计算因子的函数
+        def calculate_factor(df):
+            # 确保数据按照时间排序
+            df = df.sort_values('time')
+            
+            # 1. 计算 VWAP（成交量加权平均价）
+            # VWAP = 累积的(价格 × 成交量) / 累积的成交量
+            df['vwap'] = (df['close'] * df['volume']).cumsum() / df['volume'].cumsum()
+            
+            # 2. 计算 adv20（20 天平均成交量）
+            adv_window = 20
+            df['adv20'] = df['volume'].rolling(window=adv_window).mean()
+            
+            # 3. 计算过去 14 天的成交量累积和
+            adv_sum_window = 14  # 14.7444 天简化为 14 天
+            df['adv20_sum'] = df['adv20'].rolling(window=adv_sum_window).sum()
+            
+            # 4. 计算 close 与 adv20_sum 的 6 天相关性
+            corr_window = 6  # 6.00049 天简化为 6 天
+            df['corr_close_adv'] = df['close'].rolling(window=corr_window).corr(df['adv20_sum'])
+            
+            # 5. 对相关性进行 20 天时间序列排名
+            ts_rank_window = 20  # 20.4195 天简化为 20 天
+            df['ts_rank_corr'] = df['corr_close_adv'].rolling(window=ts_rank_window).apply(lambda x: x.rank().iloc[-1], raw=False)
+            
+            # 6. 计算 ((open + close) - (vwap + open))
+            df['price_diff'] = (df['open'] + df['close']) - (df['vwap'] + df['open'])
+            
+            # 7. 对 price_diff 进行横截面排名
+            df['rank_price_diff'] = df['price_diff'].rank(pct=True)
+            
+            # 比较 ts_rank_corr 和 rank_price_diff 并乘以 -1
+            df['factor'] = (df['ts_rank_corr'] - df['rank_price_diff'])*-1
+            
+            return df
+
+        # 计算所有股票的因子
+        def calculate_all_factors(price_path):
+            # 获取所有股票代码
+            all_data_file = os.listdir(price_path)
+            # 创建一个空的DataFrame来保存所有股票的因子
+            all_factors = pd.DataFrame()
+
+            # 遍历每一个股票代码，计算其因子，并添加到all_factors中
+            for code in all_data_file:
+                try:
+                    df = pd.read_csv(price_path + '\\' + code)
+                    # 对每一个数据都计算第一步定义的算法
+                    factor = calculate_factor(df)
+                    all_factors = all_factors.append(factor)
+                except Exception as e:
+                    print(code + '出现错误跳过:', e)
+
+            return all_factors
+
+        price_path = r'D:\量化交易构建\市场数据库\数据库\申万二级行业量价数据\1D'
+        # 计算所有股票的因子，并且合并在一个表中
+        all_factors = calculate_all_factors(price_path)
+
+        all_factors = all_factors.dropna()
+
+        # 对因子进行去除异常值和标准化操作
+        all_factors = self.QuantileTransformer_and_standardize(all_factors)
+        
+        # 将结果保存到CSV文件中
+        filename = 'MRPD'
+        
+        all_factors.reset_index(drop=True, inplace=True)
+
+        # 使用self的holding_period和start_date参数
+        result = self.add_holding_period_factors(all_factors, holding_period, start_date)
+
+        result.to_csv(self.factor_export_path + "\\" + filename + '.csv', index=False)
+
+        return result
+    
     #一致预期类
     def Fore_Roe_Two_Ma_Factor(self,window_1=20,window_2=5):
         
@@ -796,6 +877,8 @@ PVCMRF=IS10.PVCMRF()
 #量价关系类
 PCVCM=IS10.PCVCM()
 
+MRPD=IS10.MRPD()
+
 #一致预期类
 Fore_Roe_Two_Ma_Factor=IS10.Fore_Roe_Two_Ma_Factor()
 
@@ -812,7 +895,7 @@ DDE_5D=IS10.DDE_5D_factor()
 
 
  #因子组合
-def Portfolio(End_Date='2024-11-15'):
+def Portfolio(End_Date='2024-11-21'):
 
     #先组合相关性高的函数
     #换手率类
@@ -854,9 +937,9 @@ def Portfolio(End_Date='2024-11-15'):
    
     #总组合    
     Factor_List=[Turn_Rate_factor,Rank_Vwap,LVVC,VRRF,PVCMRF,
-                Fore_Roe_Two_Ma_Factor,DDE_5D]
+                MRPD,Fore_Roe_Two_Ma_Factor,DDE_5D]
     
-    Factor_Name=['Turn_Rate_factor', 'Rank_Vwap','LVVC','VRRF','PVCMRF','Fore_Roe_Two_Ma_Factor',
+    Factor_Name=['Turn_Rate_factor', 'Rank_Vwap','LVVC','VRRF','PVCMRF','MRPD','Fore_Roe_Two_Ma_Factor',
                     'DDE_5D']
     
     Result=[]
@@ -893,7 +976,7 @@ def Portfolio(End_Date='2024-11-15'):
 
     Result=Result.dropna()
 
-    export_path=r'D:\量化交易构建\ETF轮动策略\行业轮动策略\result'
+    export_path=r'D:\量化交易构建\ETF轮动策略\result'
 
     Result.to_excel(export_path+"\\"+'行业多因子结果'+'.xlsx')
 
@@ -910,7 +993,7 @@ class select_invest_target():
 
     def Select_Industry_and_Build_Portfilo(self):
 
-        Dirc=pd.read_excel(r'D:\量化交易构建\ETF轮动策略\行业轮动策略\result'+"\行业多因子结果.xlsx",index_col=[0])
+        Dirc=pd.read_excel(r'D:\量化交易构建\ETF轮动策略\result'+"\行业多因子结果.xlsx",index_col=[0])
 
         #选出前10
 
@@ -922,7 +1005,7 @@ class select_invest_target():
 
         #对应ETF名称文档
 
-        Industary_Name=pd.read_excel(r'D:\量化交易构建\ETF轮动策略\行业轮动策略\result'+'\\申万二级行业代码.xlsx')
+        Industary_Name=pd.read_excel(r'D:\量化交易构建\ETF轮动策略\result'+'\\申万二级行业代码.xlsx')
 
         df_filtered = Industary_Name[Industary_Name['代码'].isin(Top_10_Code)]
 
@@ -930,7 +1013,7 @@ class select_invest_target():
 
         df_filtered = df_filtered.sort_values('代码')
         
-        df_filtered.to_excel(r'D:\量化交易构建\ETF轮动策略\行业轮动策略\result'+'\\'+'top10行业.xlsx')
+        df_filtered.to_excel(r'D:\量化交易构建\ETF轮动策略\result'+'\\'+'top10行业.xlsx')
         
         return df_filtered
 

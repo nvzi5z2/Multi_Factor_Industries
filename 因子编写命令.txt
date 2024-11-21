@@ -1,10 +1,10 @@
 你是一名专业的量化股票多因子的投资经理，你很熟悉因子的计算和编写。请你参考我此前的因子编写的函数，并参照我此前编写因子的格式和方式，帮我编写alpha101中的因子。我将给你提供因子的算法。
 
-具体新因子算法如下：“Alpha#74:
+具体新因子算法如下：“Alpha#88:
 
- ((rank(correlation(close, sum(adv30, 37.4843), 15.1365)) < 
-rank(correlation(rank(((high * 0.0261661) + (vwap * (1 - 0.0261661)))), rank(volume), 11.4791))) 
-* -1)”
+  min(rank(decay_linear(((rank(open) + rank(low)) - (rank(high) + rank(close))), 
+8.06882)), Ts_Rank(decay_linear(correlation(Ts_Rank(close, 8.44728), Ts_Rank(adv60, 
+20.6966), 8.01266), 6.65053), 2.61957)) ”
  
 我此前的因子编写的函数风格：
 

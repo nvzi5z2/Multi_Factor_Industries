@@ -122,8 +122,8 @@ def read_price_data(file_path):
 
 def main():
     #读取因子数据
-    datapath=r'D:\量化交易构建\ETF轮动策略\行业轮动策略\待测试因子库'
-    factor_file='result_8.csv'
+    datapath=r'D:\量化交易构建\ETF轮动策略\待测试因子库'
+    factor_file='rank_vwap.csv'
     data_path=datapath+'\\'+factor_file
     factor=read_factor_data(data_path)
     #读取价格数据
@@ -173,7 +173,7 @@ def main():
 
         file_name=factor_file.replace('.csv','')
         
-        export_path=r'D:\量化交易构建\ETF轮动策略\行业轮动策略\因子IC序列'
+        export_path=r'D:\量化交易构建\ETF轮动策略\因子IC序列'
         
         os.chdir(export_path)
 
@@ -186,8 +186,6 @@ main()
 
 
 def export_selected_factor_ic(datapath):
-
-    datapath=r'D:\量化交易构建\ETF轮动策略\行业轮动策略\ETF因子库\有效因子'
 
     factor_list=os.listdir(datapath)
 
@@ -214,7 +212,7 @@ def export_selected_factor_ic(datapath):
 
             file_name=factor_file.replace('.csv','')
             
-            export_path=r'D:\量化交易构建\ETF轮动策略\行业轮动策略\因子IC序列'
+            export_path=r'D:\量化交易构建\ETF轮动策略\因子IC序列'
             
             os.chdir(export_path)
 
@@ -224,5 +222,5 @@ def export_selected_factor_ic(datapath):
 
     return print('全部IC输出完毕')
 
-datapath=r'D:\量化交易构建\ETF轮动策略\行业轮动策略\ETF因子库\有效因子'
-export_selected_factor_ic(datapath)
+datapath=r'D:\量化交易构建\ETF轮动策略\行业轮动因子库\合成因子选项'
+# export_selected_factor_ic(datapath)
