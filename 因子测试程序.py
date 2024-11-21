@@ -123,7 +123,7 @@ def read_price_data(file_path):
 def main():
     #读取因子数据
     datapath=r'D:\量化交易构建\ETF轮动策略\待测试因子库'
-    factor_file='rank_vwap.csv'
+    factor_file='DDE5D.csv'
     data_path=datapath+'\\'+factor_file
     factor=read_factor_data(data_path)
     #读取价格数据

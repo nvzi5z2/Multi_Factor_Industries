@@ -848,7 +848,7 @@ class Industry_Strategy_10Day:
         all_factors = all_factors.dropna()
 
         # 对因子进行去除异常值和标准化操作
-        all_factors = self.winsorize_and_standardize(all_factors)
+        all_factors = self.QuantileTransformer_and_standardize(all_factors)
         all_factors.reset_index(drop=True,inplace=True)
 
 
@@ -1005,7 +1005,7 @@ class select_invest_target():
 
         #对应ETF名称文档
 
-        Industary_Name=pd.read_excel(r'D:\量化交易构建\ETF轮动策略\result'+'\\申万二级行业代码.xlsx')
+        Industary_Name=pd.read_excel(r'D:\量化交易构建\ETF轮动策略\result'+'\\'+'申万二级行业代码.xlsx')
 
         df_filtered = Industary_Name[Industary_Name['代码'].isin(Top_10_Code)]
 
